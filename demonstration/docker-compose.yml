@@ -1,0 +1,143 @@
+version: "3.8"
+
+services:
+  orion-ld:
+    labels:
+      org.fiware: 'SmartWorld'
+    image: quay.io/fiware/orion-ld:1.6.0
+    hostname: orion-ld
+    container_name: orion-ld
+    restart: always
+    depends_on:
+      - mongo-db
+      - ld-context
+    networks:
+      - default
+    expose:
+      - "1026"
+    ports:
+      - "1026:1026"
+    command: -dbhost mongo-db -logLevel DEBUG -forwarding -mongocOnly -wip entityMaps
+    healthcheck:
+      test: curl --fail -s http://orion:1026/version || exit 1
+      interval: 5s
+
+  mongo-db:
+    labels:
+      org.fiware: 'SmartWorld'
+    image: mongo:6.0
+    hostname: mongo-db
+    container_name: db-mongo
+    expose:
+      - "27017"
+    ports:
+      - "27017:27017"
+    networks:
+      - default
+    volumes:
+      - mongo-db:/data/db
+      - mongo-config:/data/configdb
+    healthcheck:
+      test: ["CMD","mongosh", "localhost:27017/test", "--quiet"]
+      interval: 5s
+
+  ld-context:
+    labels:
+      org.fiware: 'tutorial'
+    image: httpd:alpine
+    hostname: context
+    container_name: fiware-ld-context
+    ports:
+      - "3004:80"
+    volumes:
+      - data-models:/usr/local/apache2/htdocs/
+      - type: bind
+        source: ${PWD}/conf/mime.types
+        target: /usr/local/apache2/conf/mime.types
+        read_only: true
+    healthcheck:
+      test: (wget --server-response --spider --quiet http://context/user-context.jsonld 2>&1 | awk 'NR==1{print $$2}'| grep -q -e "200") || exit 1
+
+  crate-db:
+    labels:
+      org.fiware: 'SmartWorld'
+    image: crate/crate:4.8.1
+    hostname: crate-db
+    container_name: db-crate
+    ports:
+      - "4200:4200"
+      - "4300:4300"
+    command: crate -Cauth.host_based.enabled=false -Ccluster.name=democluster -Chttp.cors.enabled=true -Chttp.cors.allow-origin="*" -Cnetwork.host=_site_
+    environment:
+      - CRATE_HEAP_SIZE=2g
+    volumes:
+      - crate-db:/data
+
+  quantumleap:
+    labels:
+      org.fiware: 'SmartWorld'
+    image: quay.io/fiware/quantumleap:0.9.0-PRE
+    hostname: quantumleap
+    container_name: fiware-quantumleap
+    depends_on:
+      - crate-db
+    networks:
+      - default
+    ports:
+      - "8668:8668"
+    environment:
+      - CRATE_HOST=crate-db
+      - REDIS_HOST=redis-db
+      - REDIS_PORT=6379
+      - LOGLEVEL=DEBUG
+    healthcheck:
+      test: curl --fail -s http://quantumleap:8668/version || exit 1
+
+  grafana:
+    labels:
+      org.fiware: 'SmartWorld'
+    image: grafana/grafana:9.4.2
+    container_name: grafana
+    restart: always
+    depends_on:
+      - crate-db
+    ports:
+      - "3003:3000"
+    environment:
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+    volumes:
+      - grafana:/var/lib/grafana
+ 
+  battery_controller:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    networks:
+      - default
+    depends_on:
+      - orion-ld
+
+volumes:
+  crate-db: ~
+  grafana: ~
+  mongo-db: ~
+  mongo-config: ~
+  data-models:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/data-models
+
+
+networks:
+  default:
+    name: demonstration_default
+    driver: bridge
+    external: true
+    ipam:
+      config:
+        - subnet: 172.18.1.0/24

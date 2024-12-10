@@ -1,0 +1,14 @@
+services:
+  battery_controller:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    networks:
+      - default
+
+networks:
+  default:
+    external: true
+    name: demonstration_default
