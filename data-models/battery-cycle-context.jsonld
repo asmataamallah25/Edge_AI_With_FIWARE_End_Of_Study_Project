@@ -1,0 +1,26 @@
+{
+  "@context": {
+    "@vocab": "https://schema.org/",
+    "BatteryCycle": "https://example.org/data-models#BatteryCycle",
+    "chargeLevel": {
+      "@type": "Property",
+      "@id": "https://example.org/data-models#chargeLevel",
+      "description": "The current charge level of the battery."
+    },
+    "voltage": {
+      "@type": "Property",
+      "@id": "https://example.org/data-models#voltage",
+      "description": "The current voltage of the battery."
+    },
+    "temperature": {
+      "@type": "Property",
+      "@id": "https://example.org/data-models#temperature",
+      "description": "The temperature of the battery."
+    },
+    "status": {
+      "@type": "Property",
+      "@id": "https://example.org/data-models#status",
+      "description": "The current status of the battery (e.g., charging, discharging)."
+    }
+  }
+}

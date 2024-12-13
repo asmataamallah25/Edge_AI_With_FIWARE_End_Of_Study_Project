@@ -1,0 +1,116 @@
+version: "3.8"
+services:
+  # Orion is the context broker
+  orion-ld:
+    labels:
+      org.fiware: 'SmartWorld'
+    image: quay.io/fiware/orion-ld:1.6.0
+    hostname: orion
+    container_name: fiware-orion-ld
+    restart: always
+    depends_on:
+      - mongo-db
+      - ld-context
+    networks:
+      - default
+    expose:
+      - "1026"
+    ports:
+      - "1026:1026" # localhost:1026
+    command: -dbhost mongo-db -logLevel DEBUG -forwarding -mongocOnly -wip entityMaps
+    healthcheck:
+      test: curl --fail -s http://orion:1026/version || exit 1
+      interval: 5s
+
+  mongo-db:
+    labels:
+      org.fiware: 'SmartWorld'
+    image: mongo:6.0
+    hostname: mongo-db
+    container_name: db-mongo
+    expose:
+      - "27017"
+    ports:
+      - "27017:27017" # localhost:27017
+    networks:
+      - default
+    volumes:
+      - mongo-db:/data/db
+      - mongo-config:/data/configdb
+    healthcheck:
+      test: ["CMD","mongosh", "localhost:27017/test", "--quiet"]
+      interval: 5s
+      
+  ld-context:
+    labels:
+      org.fiware: 'tutorial'
+    image: httpd:alpine
+    hostname: context
+    container_name: fiware-ld-context
+    ports:
+        - "3004:80"
+    volumes:
+        - data-models:/usr/local/apache2/htdocs/
+        - type: bind
+          source: ${PWD}/conf/mime.types
+          target: /usr/local/apache2/conf/mime.types
+          read_only: true
+    healthcheck:
+      test: (wget --server-response --spider --quiet  http://context/user-context.jsonld 2>&1 | awk 'NR==1{print $$2}'|  grep -q -e "200") || exit 1
+
+#IoT Agent
+  iot-agent:
+    labels:
+      org.fiware: 'SmartWorld'
+    restart: always
+    image: fiware/iotagent-json:1.8.0
+    hostname: iot-agent
+    container_name: iot-agent
+    networks:
+      - default
+    ports:
+      - "4041:4041"
+    depends_on:
+      - mongo-db
+    volumes:
+      - ./iotagent-json-config.js:/opt/iotajson/config.js
+
+  # Mosquito
+  mosquitto:
+    labels:
+      org.fiware: 'SmartWorld'
+    image: eclipse-mosquitto:1.6.14
+    hostname: mosquitto
+    container_name: mosquitto
+    restart: always
+    expose:
+      - "1883"
+      - "9001"
+    ports:
+      - "1883:1883" # localhost:1883
+      - "9001:9001"
+    volumes:
+      - ../mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+    networks:
+      - default
+
+volumes:
+  crate-db: ~
+  grafana: ~
+  mongo-db: ~
+  mongo-config: ~
+  data-models:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/data-models
+
+
+networks:
+  default:
+    labels:
+      org.fiware: 'SmartWorld'
+    ipam:
+      config:
+        - subnet: 172.18.1.0/24
