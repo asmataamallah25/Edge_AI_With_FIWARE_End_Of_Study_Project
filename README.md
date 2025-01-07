@@ -35,4 +35,7 @@ This part focuses on implementing recommendation systems in the edge AI solution
   - Training steps: 60
 
 ## Contributing
-Feel free to contribute to this project by forking the repository, creating your own branch and submitting a pull request with your improvements. We welcome all contributions that enhance the functionality or performance of the system.
+Feel free to contribute to this project by forking the repository, creating your own branch and submitting a pull request with your improvements. We welcome all contributions that enhance the functionality or performance of the solution.
+
+## Author
+Asma Taamallah
