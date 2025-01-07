@@ -31,3 +31,6 @@ jupyter
 
 ## Contributing
 Feel free to contribute to this project by forking the repository, creating your own branch and submitting a pull request with your improvements. We welcome all contributions that enhance the functionality or performance of the system.
+
+## Author
+Asma Taamallah
