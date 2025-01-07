@@ -1,4 +1,4 @@
-# Battery State of Health Estimator
+# Edge AI With FIWARE - Battery State of Health Estimator
 
 This Python script provides an advanced simulation of battery State of Health (SoH) estimation through integration with a FIWARE Context Broker. The program implements a sophisticated degradation model that accounts for multiple real-world factors affecting battery health, including cycle count, non-linear charging behaviors, and environmental conditions.
 
