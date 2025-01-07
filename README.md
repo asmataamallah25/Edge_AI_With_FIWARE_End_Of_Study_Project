@@ -1,7 +1,6 @@
-# Edge AI With FIWARE - Generate custom recommendation for the Battery State of Health 
-# Edge AI With FIWARE End Of Study Project
+# Edge AI With FIWARE - Custom recommendation for the Battery State of Health 
 
-## Project Overview
+## Overview
 This project focuses on integrating Edge AI capabilities with FIWARE, implementing recommendation systems in the edge AI solution using the Phi-3.5 model with Unsloth optimization.
 
 ## Features
