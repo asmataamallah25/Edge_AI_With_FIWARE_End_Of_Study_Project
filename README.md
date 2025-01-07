@@ -1,9 +1,9 @@
 # Edge AI With FIWARE - Battery State of Health Estimation
 
-This repository contains Jupyter notebooks implementing different approaches for Battery State of Health (SOH) estimation using machine learning and statistical methods.
+This branch contains Jupyter notebooks implementing different approaches for Battery State of Health (SOH) estimation using machine learning and statistical methods.
 
 ## Overview
-This project explores two different methodologies for estimating battery State of Health:
+This part of the project explores two different methodologies for estimating battery State of Health:
 - Long Short-Term Memory (LSTM) Neural Networks
 - Autoregressive Integrated Moving Average (ARIMA)
 
