@@ -1,7 +1,7 @@
 # Edge AI With FIWARE - Custom recommendation for the Battery State of Health 
 
 ## Overview
-This project focuses on integrating Edge AI capabilities with FIWARE, implementing recommendation systems in the edge AI solution using the Phi-3.5 model with Unsloth optimization.
+This part focuses on implementing recommendation systems in the edge AI solution using the Phi-3.5 model with Unsloth optimization.
 
 ## Features
 - Custom recommendations based on State of Health (SOH)
