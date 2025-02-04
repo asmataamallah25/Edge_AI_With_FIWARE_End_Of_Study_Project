@@ -1,14 +1,13 @@
 #!/bin/bash
 
-# Stop and remove all containers
+# Stop all containers
 podman stop $(podman ps -aq)
-podman rm $(podman ps -aq)
 
-# Remove the pod
-podman pod rm pod_fiware
+# Remove all containers
+podman rm -f $(podman ps -aq)
 
-# Clean up container storage
-podman system prune -f
+# Remove all pods
+podman pod rm -f $(podman pod ls -q)
 
-# Run docker-compose file
-podman-compose up -d
+# Remove all volumes
+podman volume prune -f

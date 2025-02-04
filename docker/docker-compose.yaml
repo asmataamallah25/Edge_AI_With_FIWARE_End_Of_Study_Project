@@ -52,7 +52,7 @@ services:
     volumes:
         - data-models:/usr/local/apache2/htdocs/
         - type: bind
-          source: ${PWD}/conf/mime.types
+          source: ${PWD}/../conf/mime.types
           target: /usr/local/apache2/conf/mime.types
           read_only: true
     healthcheck:
@@ -123,8 +123,8 @@ services:
       - "1883:1883" # localhost:1883
       - "9001:9001"
     volumes:
-      - ${PWD}/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
-      - ${PWD}/mosquitto/mosquitto.passwd:/mosquitto/config/mosquitto.passwd
+      - ${PWD}/../mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ${PWD}/../mosquitto/mosquitto.passwd:/mosquitto/config/mosquitto.passwd
     networks:
       - default
   
@@ -192,7 +192,7 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: ${PWD}/data-models
+      device: ${PWD}/../data-models
 
 
 networks:

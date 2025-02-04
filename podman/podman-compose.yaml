@@ -52,7 +52,7 @@ services:
     volumes:
         - data-models:/usr/local/apache2/htdocs/
         - type: bind
-          source: ${PWD}/conf/mime.types
+          source: ${PWD}/../conf/mime.types
           target: /usr/local/apache2/conf/mime.types
           read_only: true
     healthcheck:
@@ -72,8 +72,7 @@ services:
       - "4041:4041"
     depends_on:
       - mongo-db
-    volumes:
-      - ./iotagent-json-config.js:/opt/iotajson/config.js
+
 
   # Mosquito
   mosquitto:
@@ -90,9 +89,64 @@ services:
       - "1883:1883" # localhost:1883
       - "9001:9001"
     volumes:
-      - ../mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ${PWD}/../mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ${PWD}/../mosquitto/mosquitto.passwd:/mosquitto/config/mosquitto.passwd
     networks:
       - default
+  crate-db:
+    labels:
+      org.fiware: 'SmartWorld'
+    image: crate/crate:4.8.1
+    hostname: crate-db
+    container_name: db-crate
+    ports:
+      # Admin UI
+      - "4200:4200"
+      # Transport protocol
+      - "4300:4300"
+    command: crate -Cauth.host_based.enabled=false  -Ccluster.name=democluster -Chttp.cors.enabled=true -Chttp.cors.allow-origin="*" -Cnetwork.host=_site_
+    environment:
+      - CRATE_HEAP_SIZE=2g # see https://crate.io/docs/crate/howtos/en/latest/deployment/containers/docker.html#troubleshooting
+    volumes:
+      - crate-db:/data
+
+  quantumleap:
+    labels:
+      org.fiware: 'SmartWorld'
+    image: quay.io/fiware/quantumleap:0.9.0-PRE
+    hostname: quantumleap
+    container_name: fiware-quantumleap
+    depends_on:
+      - crate-db
+    networks:
+      - default
+    ports:
+      - "8668:8668"
+    environment:
+      - CRATE_HOST=crate-db
+      - REDIS_HOST=redis-db
+      - REDIS_PORT=6379
+      - LOGLEVEL=DEBUG
+    healthcheck:
+      test: curl --fail -s http://quantumleap:8668/version || exit 1
+
+  grafana:
+    labels:
+      org.fiware: 'SmartWorld'
+    image: grafana/grafana:9.4.2 # grafana/grafana:6.1.6
+    container_name: grafana
+    restart: always
+    depends_on:
+      - crate-db
+    ports:
+      - "3003:3000"
+    environment:
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+    #  - GF_INSTALL_PLUGINS=https://github.com/orchestracities/grafana-map-plugin/archive/master.zip;grafana-map-plugin,grafana-clock-panel,grafana-worldmap-panel
+    volumes:
+      - grafana:/var/lib/grafana
+  
 
 volumes:
   crate-db: ~
@@ -104,7 +158,7 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: ${PWD}/data-models
+      device: ${PWD}/../data-models
 
 
 networks:
@@ -113,4 +167,5 @@ networks:
       org.fiware: 'SmartWorld'
     ipam:
       config:
+        - subnet: 172.18.1.0/24
         - subnet: 172.18.1.0/24
